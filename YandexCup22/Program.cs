@@ -15,14 +15,11 @@ namespace YandexCup22
 
             for (int n = 1; n <= arrNMC[0]; n++)
             {
-                var dc = new DataCenter(n, arrNMC[1]);
-                var servers = new Server[arrNMC[1]];
-                for (int m = 0; m < arrNMC[1]; m++) 
-                {
-                    servers[m] = new Server(m+1); 
-                }
+                var dc = new DataCenter(n);
+                var servers = new List<Server>();
+                for (int m = 1; m <= arrNMC[1]; m++) { servers.Add(new Server(m)); }
                 dc.servers = servers;
-                dcList.Add(dc);                
+                dcList.Add(dc);
             }
 
             for (var c = 0; c < arrNMC[2]; c++)
@@ -37,13 +34,13 @@ namespace YandexCup22
 
             switch (arrCom[0].ToLower())
             {
+                case "reset":
+                    ResetDc(int.Parse(arrCom[1]));
+                    break;
+
                 case "disable":
                     DisableServer(int.Parse(arrCom[1]), int.Parse(arrCom[2]));
                     break;
-
-                case "reset":
-                    ResetDc(int.Parse(arrCom[1]));
-                    break;                
 
                 case "getmax":
                     GetMax();
@@ -58,21 +55,17 @@ namespace YandexCup22
         public static void ResetDc(int dcNumber)
         {
             var dc = dcList.FirstOrDefault(x => x.Number == dcNumber);
-            
-            foreach (var serv in dc.servers) 
-            { 
-                if(serv.State == false) serv.State = true; 
-            }            
+
+            foreach (var serv in dc.servers) { serv.State = true; }
             dc.ResetCount++;
             dc.RA = dc.ResetCount * arrNMC[1];
         }
 
         public static void DisableServer(int dcNumber, int servNumber)
         {
-            dcNumber--;
-            servNumber--;
-            dcList[dcNumber].servers[servNumber].State = false;
-            dcList[dcNumber].RA = dcList[dcNumber].ResetCount * dcList[dcNumber].servers.Count(x => x.State == true);            
+            var dc = dcList.FirstOrDefault(x => x.Number == dcNumber);
+            dc.servers.FirstOrDefault(x => x.Number == servNumber).State = false;
+            dc.RA = dc.ResetCount * dc.servers.Count(x => x.State == true);
         }
 
         public static void GetMax()
@@ -88,15 +81,14 @@ namespace YandexCup22
 
     public class DataCenter
     {
-        public DataCenter(int number, int m)
+        public DataCenter(int number)
         {
             Number = number;
-            servers = new Server[m];
         }
 
         public int Number { get; set; }
         public int ResetCount { get; set; } = 0;
-        public Server[] servers { get; set; } 
+        public List<Server> servers { get; set; } = new List<Server>();
         public int RA { get; set; } = 0;
     }
 
@@ -108,6 +100,6 @@ namespace YandexCup22
         }
 
         public int Number { get; set; }
-        public bool State { get; set; } = true;      
+        public bool State { get; set; } = true;
     }
 }
